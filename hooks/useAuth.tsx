@@ -1,5 +1,6 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import axios from "axios";
+import { useRouter } from 'next/router'
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -10,15 +11,24 @@ type SignInCredentials = {
   password: string
 }
 
+type User = {
+  email: string
+  roles: string[]
+  permissions: string[]
+}
+
 type AuthContextData = {
   signIn(credentrial: SignInCredentials): Promise<void>
   isAuthenticated: boolean
+  user: User
 }
 
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthProvider({ children }: AuthProviderProps){
-  const isAuthenticated = false
+  const router = useRouter()
+  const [user, setUser] = useState<User>()
+  const isAuthenticated = !!user 
 
   async function signIn({ email, password }: SignInCredentials) {
     try {
@@ -26,7 +36,11 @@ export function AuthProvider({ children }: AuthProviderProps){
         email,
         password
       })
-      alert(JSON.stringify(response.data))  
+
+      const { permissions, roles } = response.data
+      setUser({ email, permissions, roles })
+      router.push('/dashboard')
+      alert(JSON.stringify('Success', response.data))  
     } catch (error) {
       alert(JSON.stringify(error))
     }
@@ -35,7 +49,8 @@ export function AuthProvider({ children }: AuthProviderProps){
   return (
     <AuthContext.Provider value={{
       signIn,
-      isAuthenticated
+      isAuthenticated,
+      user
     }}>
       {children}
     </AuthContext.Provider>
