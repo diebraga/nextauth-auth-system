@@ -1,4 +1,5 @@
-import { createContext, ReactNode, useContext, useEffect } from "react";
+import { createContext, ReactNode, useContext } from "react";
+import axios from "axios";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -20,7 +21,15 @@ export function AuthProvider({ children }: AuthProviderProps){
   const isAuthenticated = false
 
   async function signIn({ email, password }: SignInCredentials) {
-    console.log({ email, password })
+    try {
+      const response = await axios.post(`http://localhost:3333/sessions`, {
+        email,
+        password
+      })
+      alert(JSON.stringify(response.data))  
+    } catch (error) {
+      alert(JSON.stringify(error))
+    }
   }
 
   return (
